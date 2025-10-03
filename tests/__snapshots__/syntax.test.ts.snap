@@ -1,0 +1,516 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`NaN literal 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "x",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "NaN",
+    "value": NaN,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`const foo = 42; 1`] = `
+[
+  {
+    "kind": "Const",
+    "source": "const",
+  },
+  {
+    "kind": "Identifier",
+    "source": "foo",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "42",
+    "value": 42,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`floating numbers 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "pi",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "3.14",
+    "value": 3.14,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`greek identifiers 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "α",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "1",
+    "value": 1,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+  {
+    "kind": "Const",
+    "source": "const",
+  },
+  {
+    "kind": "Identifier",
+    "source": "π",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "3.14",
+    "value": 3.14,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`greek identifiers 2`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "язык",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "String",
+    "source": "'lang'",
+    "value": "lang",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`greek identifiers 3`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "́",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "String",
+    "source": "'é'",
+    "value": "é",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`greek identifiers 4`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "❌",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "1",
+    "value": 1,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`identifiers and colons 1`] = `
+[
+  {
+    "kind": "Identifier",
+    "source": "foo",
+  },
+  {
+    "kind": "Colon",
+    "source": ":",
+  },
+  {
+    "kind": "Identifier",
+    "source": "bar",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`let hello = 1; 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "hello",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "1",
+    "value": 1,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`mixed operators 1`] = `
+[
+  {
+    "kind": "Identifier",
+    "source": "a",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Identifier",
+    "source": "b",
+  },
+  {
+    "kind": "Colon",
+    "source": ":",
+  },
+  {
+    "kind": "Identifier",
+    "source": "c",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`multiple identifiers 1`] = `
+[
+  {
+    "kind": "Identifier",
+    "source": "a",
+  },
+  {
+    "kind": "Identifier",
+    "source": "b",
+  },
+  {
+    "kind": "Identifier",
+    "source": "c",
+  },
+]
+`;
+
+exports[`string double quotes 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "s",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "String",
+    "source": ""world"",
+    "value": "world",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`string escapes 1`] = `
+[
+  {
+    "kind": "String",
+    "source": "'a\\nb'",
+    "value": "a
+b",
+  },
+]
+`;
+
+exports[`string single quotes 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "s",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "String",
+    "source": "'hello'",
+    "value": "hello",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`unicode identifiers 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "α",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "1",
+    "value": 1,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+  {
+    "kind": "Const",
+    "source": "const",
+  },
+  {
+    "kind": "Identifier",
+    "source": "π",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "3.14",
+    "value": 3.14,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`unicode identifiers 2`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "язык",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "String",
+    "source": "'lang'",
+    "value": "lang",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`unicode identifiers 3`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "́",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "String",
+    "source": "'é'",
+    "value": "é",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`unicode identifiers 4`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "❌",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "1",
+    "value": 1,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`unquoted identifier with digits 1`] = `
+[
+  {
+    "kind": "Identifier",
+    "source": "foo123",
+  },
+]
+`;
+
+exports[`whitespace and newlines 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "x",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "1",
+    "value": 1,
+  },
+]
+`;

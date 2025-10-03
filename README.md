@@ -1,2 +1,3 @@
 # the-ceiling
-compiles to TypeScript
+
+bespoke actor framework
