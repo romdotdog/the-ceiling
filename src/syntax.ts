@@ -1,14 +1,15 @@
+import { Diagnostic, Diagnostics, Severity, Span } from "./diagnostics.js";
 import { assert } from "./util.js";
 
 // prettier-ignore
 class StringScanner {
-  constructor(private src: string, public p: number) {}
+  constructor(protected src: string, public p: number) {}
 
-  private char(): string | undefined {
+  protected char(): string | undefined {
     return this.src[this.p];
   }
 
-  private readHexDigits(n: number): string {
+  protected readHexDigits(n: number): string {
     let result = "";
     for (let i = 0; i < n; i++) {
       const ch = this.char();
@@ -21,7 +22,7 @@ class StringScanner {
     return result;
   }
 
-  private readUnicodeEscape(): string {
+  protected readUnicodeEscape(): string {
     this.p += 1; // skip 'u'
     if (this.char() === "{") {
       this.p += 1; // skip {
@@ -39,7 +40,7 @@ class StringScanner {
     return String.fromCharCode(parseInt(this.readHexDigits(4), 16));
   }
 
-  private readHexEscape(): string {
+  protected readHexEscape(): string {
     this.p += 1; // skip 'x'
     return String.fromCharCode(parseInt(this.readHexDigits(2), 16));
   }
@@ -82,14 +83,44 @@ class StringScanner {
 }
 
 export enum TokenKind {
+  // Operators & Punctuation
   Equals,
+  EqualsEquals,
   Colon,
   Semicolon,
+  Comma,
+  Dot,
+  LParen,
+  RParen,
+  LBrace,
+  RBrace,
+  LBracket,
+  RBracket,
+  LAngle,
+  RAngle,
+  Arrow,
+
+  // Literals
   Number,
   String,
   Identifier,
+
+  // Keywords
+  Actor,
+  Await,
+  Command,
   Const,
+  Function,
+  Handle,
+  If,
+  Else,
   Let,
+  Query,
+  Read,
+  Return,
+  Struct,
+  This,
+  Unique,
 }
 
 type Token =
@@ -98,18 +129,22 @@ type Token =
   | { kind: TokenKind.String; start: number; end: number; value: string };
 
 export class Lexer {
-  private p = 0;
-  constructor(private src: string) {}
+  protected p = 0;
+  constructor(protected src: string) {}
 
-  private done() {
+  public getSource() {
+    return this.src;
+  }
+
+  protected done() {
     return this.p >= this.src.length;
   }
 
-  private char(): string | undefined {
+  protected char(): string | undefined {
     return this.src[this.p];
   }
 
-  private skipWhitespace() {
+  protected skipWhitespace() {
     while (true) {
       switch (this.char()) {
         case " ":
@@ -124,11 +159,19 @@ export class Lexer {
     }
   }
 
-  private token(): Token | null {
+  protected token(): Token | null {
     const start = this.p;
     switch (this.char()) {
       case "=":
         this.p += 1;
+        if (this.char() === "=") {
+          this.p += 1;
+          return { kind: TokenKind.EqualsEquals, start, end: this.p };
+        }
+        if (this.char() === ">") {
+          this.p += 1;
+          return { kind: TokenKind.Arrow, start, end: this.p };
+        }
         return { kind: TokenKind.Equals, start, end: this.p };
       case ":":
         this.p += 1;
@@ -136,6 +179,36 @@ export class Lexer {
       case ";":
         this.p += 1;
         return { kind: TokenKind.Semicolon, start, end: this.p };
+      case ",":
+        this.p += 1;
+        return { kind: TokenKind.Comma, start, end: this.p };
+      case ".":
+        this.p += 1;
+        return { kind: TokenKind.Dot, start, end: this.p };
+      case "(":
+        this.p += 1;
+        return { kind: TokenKind.LParen, start, end: this.p };
+      case ")":
+        this.p += 1;
+        return { kind: TokenKind.RParen, start, end: this.p };
+      case "{":
+        this.p += 1;
+        return { kind: TokenKind.LBrace, start, end: this.p };
+      case "}":
+        this.p += 1;
+        return { kind: TokenKind.RBrace, start, end: this.p };
+      case "[":
+        this.p += 1;
+        return { kind: TokenKind.LBracket, start, end: this.p };
+      case "]":
+        this.p += 1;
+        return { kind: TokenKind.RBracket, start, end: this.p };
+      case "<":
+        this.p += 1;
+        return { kind: TokenKind.LAngle, start, end: this.p };
+      case ">":
+        this.p += 1;
+        return { kind: TokenKind.RAngle, start, end: this.p };
       case "'":
       case '"': {
         const scanner = new StringScanner(this.src, this.p);
@@ -184,13 +257,39 @@ export class Lexer {
     }
   }
 
-  private processIdent(start: number, end: number): Token {
+  protected processIdent(start: number, end: number): Token {
     const content = this.src.slice(start, end);
     switch (content) {
-      case "let":
-        return { kind: TokenKind.Let, start, end };
+      case "actor":
+        return { kind: TokenKind.Actor, start, end };
+      case "await":
+        return { kind: TokenKind.Await, start, end };
+      case "command":
+        return { kind: TokenKind.Command, start, end };
       case "const":
         return { kind: TokenKind.Const, start, end };
+      case "else":
+        return { kind: TokenKind.Else, start, end };
+      case "function":
+        return { kind: TokenKind.Function, start, end };
+      case "handle":
+        return { kind: TokenKind.Handle, start, end };
+      case "if":
+        return { kind: TokenKind.If, start, end };
+      case "let":
+        return { kind: TokenKind.Let, start, end };
+      case "query":
+        return { kind: TokenKind.Query, start, end };
+      case "read":
+        return { kind: TokenKind.Read, start, end };
+      case "return":
+        return { kind: TokenKind.Return, start, end };
+      case "struct":
+        return { kind: TokenKind.Struct, start, end };
+      case "this":
+        return { kind: TokenKind.This, start, end };
+      case "unique":
+        return { kind: TokenKind.Unique, start, end };
       case "NaN":
         return { kind: TokenKind.Number, start, end, value: NaN };
     }
@@ -202,15 +301,45 @@ export class Lexer {
   }
 }
 
-class Parser {
-  private lexer: Generator<Token, void, unknown>;
-  private token: Token | null = null;
-  constructor(lexer: Lexer) {
+class ParserBase {
+  public diagutil: Diagnostics;
+  public diag: Diagnostic[] = [];
+  protected lexer: Generator<Token, void, unknown>;
+  protected token: Token | null = null;
+
+  constructor(protected uri: string, lexer: Lexer) {
+    this.diagutil = new Diagnostics(uri, lexer.getSource());
     this.lexer = lexer.run();
     this.next();
   }
 
-  private next() {
+  protected expect(kind: TokenKind): Token {
+    const tok = this.token;
+    if (tok === null || tok.kind !== kind) {
+      throw new Error(`expected ${TokenKind[kind]}, got ${tok ? TokenKind[tok.kind] : "<eof>"}`);
+    }
+    this.next();
+    return tok;
+  }
+
+  protected consume(kind: TokenKind): boolean {
+    if (this.token?.kind === kind) {
+      this.next();
+      return true;
+    }
+    return false;
+  }
+
+  protected error(message: string, span: Span): void {
+    this.diag.push({
+      range: this.diagutil.getRange(span),
+      severity: Severity.Error,
+      message,
+      source: "the-ceiling",
+    });
+  }
+
+  protected next() {
     const { value, done } = this.lexer.next();
     if (done) {
       this.token = null;
@@ -220,3 +349,5 @@ class Parser {
     }
   }
 }
+
+class Parser extends ParserBase {}
