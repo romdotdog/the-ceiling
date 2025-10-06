@@ -529,7 +529,7 @@ export type FunctionDecl = {
   span: Span;
 };
 
-export type Decl = FunctionDecl;
+export type Decl = FunctionDecl | ASTError;
 
 // -----------
 
@@ -588,9 +588,9 @@ class ParserBase {
         this.next();
         return token;
       }
-      return this.error(this.span, `expected ${TokenKind[kind]} for ${forMsg}, got ${TokenKind[this.token.kind]}`);
+      return this.error(this.span, `expected ${TokenKind[kind]} ${forMsg}, got ${TokenKind[this.token.kind]}`);
     } else {
-      return this.error(this.span, `expected ${TokenKind[kind]} for ${forMsg}, got <eof>`);
+      return this.error(this.span, `expected ${TokenKind[kind]} ${forMsg}, got <eof>`);
     }
   }
 
@@ -691,7 +691,7 @@ class Parser extends ParserBase {
     const binding = this.recovery([TokenKind.Equals], () => this.parseBinding());
     if (this.inRecoveryFor(binding)) return binding;
 
-    const equals = this.expect(TokenKind.Equals, "let/const binding");
+    const equals = this.expect(TokenKind.Equals, "for let/const binding");
     if (isError(equals)) return equals;
 
     const init = this.parseExpr();
@@ -706,28 +706,25 @@ class Parser extends ParserBase {
     return { kind: ASTKind.Return, value, span: this.getSpanSince(start) };
   }
 
-  protected parseTypeExpr(): TypeExpr {}
-
-  protected parseExpr(): Expr {}
-
-  protected parseStmt(): Stmt {}
-
   protected parseBlock(): Stmt[] | ASTError {
-    const start = this.startOfSpan;
     this.next(); // skip left brace
 
     const result: Stmt[] = [];
     do {
-      const stmt = this.recovery([TokenKind.Comma, TokenKind.RBrace], () => this.parseStmt());
+      const stmt = this.recovery([TokenKind.Semicolon, TokenKind.RBrace], () => this.parseStmt());
       if (this.inRecoveryFor(stmt)) return stmt;
       result.push(stmt);
-    } while (this.consume(TokenKind.Comma));
 
-    this.expect(TokenKind.RBrace, "to terminate block"); // example of error not located in AST
+      this.expect(TokenKind.Semicolon, "to close the statement");
+      this.inRecovery = false; // no need to recover from semicolon
+    } while (this.token && this.token.kind !== TokenKind.RBrace);
+
+    this.expect(TokenKind.RBrace, "to terminate block");
+    this.inRecovery = false;
     return result;
   }
 
-  protected parseFunction() {
+  protected parseFunction(): FunctionDecl | ASTError {
     const start = this.startOfSpan;
     this.next(); // skip function
 
@@ -735,7 +732,7 @@ class Parser extends ParserBase {
     if (this.inRecoveryFor(name)) return name; // not recovering
 
     let lparen = this.recovery([TokenKind.Colon, TokenKind.LBrace], () =>
-      this.expect(TokenKind.LParen, "function parameters")
+      this.expect(TokenKind.LParen, "for function parameters")
     );
     if (this.inRecoveryFor(lparen)) return lparen;
 
@@ -750,7 +747,7 @@ class Parser extends ParserBase {
       } while (this.consume(TokenKind.Comma));
 
       const rparen = this.recovery([TokenKind.Colon, TokenKind.LBrace], () =>
-        this.expect(TokenKind.RParen, "closing function parameters")
+        this.expect(TokenKind.RParen, "to close function parameters")
       );
       if (this.inRecoveryFor(rparen)) return rparen;
     }
@@ -765,16 +762,37 @@ class Parser extends ParserBase {
     return { kind: ASTKind.FunctionDecl, name, params, returnType, body, span: this.getSpanSince(start) };
   }
 
-  protected parseNode(): Expr | Stmt | TypeExpr {
+  protected parseTypeExpr(): TypeExpr {}
+
+  protected parseExpr(): Expr {}
+
+  protected parseStmt(): Stmt {
+    if (this.token === null) {
+      return this.error(this.span, `expected statement, got <eof>`);
+    }
     let isConst = false;
-    switch (this.token?.kind) {
+    switch (this.token.kind) {
       case TokenKind.Const:
         isConst = true;
       case TokenKind.Let:
         return this.parseLocal(isConst);
       case TokenKind.Return:
         return this.parseReturn();
-      case TokenKind.Function:
     }
+
+    const start = this.startOfSpan;
+    const expr = this.parseExpr();
+    return { kind: ASTKind.ExprStmt, expr, span: this.getSpanSince(start) };
+  }
+
+  public parseDeclaration(): Decl {
+    if (this.token === null) {
+      return this.error(this.span, `expected declaration, got <eof>`);
+    }
+    switch (this.token.kind) {
+      case TokenKind.Function:
+        return this.parseFunction();
+    }
+    return this.error(this.span, `expected declaration, got ${TokenKind[this.token.kind]}`);
   }
 }
