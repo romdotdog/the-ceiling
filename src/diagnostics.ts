@@ -38,6 +38,10 @@ export class LineCol {
     }
   }
 
+  public getSource(): string {
+    return this.src;
+  }
+
   public lookup(offset: number) {
     let left = 0;
     let right = this.lineStarts.length - 1;
@@ -61,8 +65,12 @@ export class LineCol {
 }
 
 export class Diagnostics extends LineCol {
-  constructor(private uri: string, protected src: string) {
+  constructor(protected uri: string, protected src: string) {
     super(src);
+  }
+
+  public getURI(): string {
+    return this.uri;
   }
 
   public getRange(span: Span): Range {
