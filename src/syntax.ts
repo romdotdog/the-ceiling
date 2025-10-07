@@ -86,6 +86,7 @@ export enum TokenKind {
   // operators and punctuation
   Equals,
   EqualsEquals,
+  NotEquals,
   Colon,
   Semicolon,
   Comma,
@@ -99,6 +100,13 @@ export enum TokenKind {
   LAngle,
   RAngle,
   Arrow,
+  Plus,
+  Minus,
+  Star,
+  Slash,
+  AmpAmp,
+  PipePipe,
+  Exclaim,
 
   // literals
   Number,
@@ -192,6 +200,13 @@ export class Lexer {
             return this.spanned({ kind: TokenKind.Arrow }, start, this.p);
         }
         return this.spanned({ kind: TokenKind.Equals }, start, this.p);
+      case "!":
+        this.p += 1;
+        if (this.char() === "=") {
+          this.p += 1;
+          return this.spanned({ kind: TokenKind.NotEquals }, start, this.p);
+        }
+        return this.spanned({ kind: TokenKind.Exclaim }, start, this.p);
       case ":":
         this.p += 1;
         return this.spanned({ kind: TokenKind.Colon }, start, this.p);
@@ -228,6 +243,32 @@ export class Lexer {
       case ">":
         this.p += 1;
         return this.spanned({ kind: TokenKind.RAngle }, start, this.p);
+      case "+":
+        this.p += 1;
+        return this.spanned({ kind: TokenKind.Plus }, start, this.p);
+      case "-":
+        this.p += 1;
+        return this.spanned({ kind: TokenKind.Minus }, start, this.p);
+      case "*":
+        this.p += 1;
+        return this.spanned({ kind: TokenKind.Star }, start, this.p);
+      case "/":
+        this.p += 1;
+        return this.spanned({ kind: TokenKind.Slash }, start, this.p);
+      case "&": // FIXME
+        this.p += 1;
+        if (this.char() === "&") {
+          this.p += 1;
+          return this.spanned({ kind: TokenKind.AmpAmp }, start, this.p);
+        }
+        return null;
+      case "|":
+        this.p += 1;
+        if (this.char() === "|") {
+          this.p += 1;
+          return this.spanned({ kind: TokenKind.PipePipe }, start, this.p);
+        }
+        return null;
       case "'":
       case '"': {
         const scanner = new StringScanner(this.src, this.p);
@@ -251,9 +292,11 @@ export class Lexer {
       if (this.done()) break;
 
       // start taking an identifier
+      let isNumberSoFar = true;
       const start = this.p;
       ident: while (true) {
-        switch (this.char()) {
+        const c = this.char();
+        switch (c) {
           case undefined:
           case " ":
           case "\t":
@@ -261,7 +304,27 @@ export class Lexer {
           case "\n":
             yield this.processIdent(start, this.p);
             break ident;
+          case ".":
+            if (isNumberSoFar) {
+              // check if the next character is a digit, e.g. 3.1
+              const nextChar = this.src[this.p + 1];
+              if (nextChar && isNumber(nextChar)) {
+                // continue, just a decimal point
+                this.p += 1;
+                break;
+              }
+              // not a decimal point, treat as separator, e.g. 2.square()
+              // fall through to yield the dot separately
+            }
+
+            // terminate and yield a dot
+            yield this.processIdent(start, this.p);
+            yield this.spanned({ kind: TokenKind.Dot }, this.p, ++this.p);
+            break ident;
           default: {
+            if (!isNumber(c)) {
+              isNumberSoFar = false;
+            }
             const maybeEnd = this.p;
             const maybeToken = this.token();
             if (maybeToken) {
@@ -273,6 +336,10 @@ export class Lexer {
           }
         }
       }
+    }
+
+    function isNumber(c: string) {
+      return c >= "0" && c <= "9";
     }
   }
 
@@ -434,8 +501,8 @@ export enum ASTKind {
   Unary,
   Binary,
   Identifier,
-  Number,
-  String,
+  NumberLiteral,
+  StringLiteral,
   Call,
 
   // statements
@@ -455,9 +522,9 @@ export enum ASTKind {
 }
 
 type Identifier = { kind: ASTKind.Identifier; name: string; span: Span };
-type ASTError = { kind: ASTKind.Error; diagnostic: Diagnostic };
+type ASTError = { kind: ASTKind.Error; diagnostic: Diagnostic; span: Span };
 
-function isError(node: Object): node is TypeExpr {
+function isError(node: Object): node is ASTError {
   return "kind" in node && node.kind === ASTKind.Error;
 }
 
@@ -465,7 +532,8 @@ export type Expr =
   | { kind: ASTKind.Unary; op: UnaryOp; right: Expr; span: Span }
   | { kind: ASTKind.Binary; left: Expr; op: BinaryOp; right: Expr; span: Span }
   | Identifier
-  | { kind: ASTKind.Number; value: number; span: Span }
+  | { kind: ASTKind.NumberLiteral; value: number; span: Span }
+  | { kind: ASTKind.StringLiteral; value: string; span: Span }
   | { kind: ASTKind.Call; callee: Expr; args: Expr[]; span: Span }
   | ASTError;
 
@@ -474,7 +542,8 @@ function isExpr(node: { kind: ASTKind }): node is Expr {
     case ASTKind.Unary:
     case ASTKind.Binary:
     case ASTKind.Identifier:
-    case ASTKind.Number:
+    case ASTKind.NumberLiteral:
+    case ASTKind.StringLiteral:
     case ASTKind.Call:
       return true;
   }
@@ -500,7 +569,7 @@ function isStmt(node: { kind: ASTKind }): node is Stmt {
 }
 export type TypeExpr =
   | Identifier
-  | { kind: ASTKind.HandleType; lifetimes: Identifier[]; inner: TypeExpr; span: Span }
+  | { kind: ASTKind.HandleType; unique: boolean; lifetimes: Identifier[]; inner: TypeExpr; span: Span }
   | ASTError;
 
 function isTypeExpr(node: { kind: ASTKind }): node is TypeExpr {
@@ -618,15 +687,19 @@ class ParserBase {
       source: "the-ceiling",
     };
     this.allDiags.push(diagnostic);
-    this.recover();
-    return { kind: ASTKind.Error, diagnostic };
+    const fullRecoverySpan = this.recover();
+    return { kind: ASTKind.Error, diagnostic, span: fullRecoverySpan };
   }
 
-  protected recover() {
+  protected recover(): Span {
+    let start = this.startOfSpan;
     this.inRecovery = true;
+    let end = this.endOfSpan;
     while (this.token && !this.recoverySet.has(this.token.kind)) {
+      end = this.endOfSpan;
       this.next();
     }
+    return { start, end };
   }
 
   protected recovery<T extends Object>(supported: TokenKind[], f: () => T | ASTError): T | ASTError {
@@ -658,8 +731,16 @@ class ParserBase {
     return this.token ? this.token.start : this.endOfSrc;
   }
 
-  protected getSpanSince(start: number): Span {
-    return { start, end: this.startOfSpan };
+  protected get endOfSpan(): number {
+    return this.token ? this.token.end : this.endOfSrc;
+  }
+
+  protected backwardExtendSpan(start: number, span: Span): Span {
+    return { start, end: span.end };
+  }
+
+  protected backwardExtendNodeSpan(start: number, toNode: { span: Span }): Span {
+    return this.backwardExtendSpan(start, toNode.span);
   }
 
   protected inRecoveryFor(node: Object): node is ASTError {
@@ -669,7 +750,7 @@ class ParserBase {
   }
 }
 
-class Parser extends ParserBase {
+export class Parser extends ParserBase {
   protected parseBinding(): Binding {
     const start = this.startOfSpan;
 
@@ -678,10 +759,10 @@ class Parser extends ParserBase {
 
     if (this.consume(TokenKind.Colon)) {
       const type = this.parseTypeExpr();
-      return { name, type, span: this.getSpanSince(start) };
+      return { name, type, span: this.backwardExtendNodeSpan(start, type) };
     }
 
-    return { name, span: this.getSpanSince(start) };
+    return { name, span: this.backwardExtendNodeSpan(start, name) };
   }
 
   protected parseLocal(isConst: boolean): Stmt {
@@ -695,7 +776,12 @@ class Parser extends ParserBase {
     if (isError(equals)) return equals;
 
     const init = this.parseExpr();
-    return { kind: isConst ? ASTKind.Const : ASTKind.Let, binding, init, span: this.getSpanSince(start) };
+    return {
+      kind: isConst ? ASTKind.Const : ASTKind.Let,
+      binding,
+      init,
+      span: this.backwardExtendNodeSpan(start, init),
+    };
   }
 
   protected parseReturn(): Stmt {
@@ -703,25 +789,27 @@ class Parser extends ParserBase {
     this.next(); // skip return
 
     const value = this.parseExpr();
-    return { kind: ASTKind.Return, value, span: this.getSpanSince(start) };
+    return { kind: ASTKind.Return, value, span: this.backwardExtendNodeSpan(start, value) };
   }
 
-  protected parseBlock(): Stmt[] | ASTError {
+  protected parseBlock(): { stmts: Stmt[]; span: Span } | ASTError {
+    const start = this.startOfSpan;
     this.next(); // skip left brace
 
-    const result: Stmt[] = [];
+    const stmts: Stmt[] = [];
     do {
       const stmt = this.recovery([TokenKind.Semicolon, TokenKind.RBrace], () => this.parseStmt());
       if (this.inRecoveryFor(stmt)) return stmt;
-      result.push(stmt);
+      stmts.push(stmt);
 
       this.expect(TokenKind.Semicolon, "to close the statement");
       this.inRecovery = false; // no need to recover from semicolon
     } while (this.token && this.token.kind !== TokenKind.RBrace);
 
+    const end = this.endOfSpan;
     this.expect(TokenKind.RBrace, "to terminate block");
     this.inRecovery = false;
-    return result;
+    return { stmts, span: { start, end } };
   }
 
   protected parseFunction(): FunctionDecl | ASTError {
@@ -758,13 +846,224 @@ class Parser extends ParserBase {
       if (this.inRecoveryFor(returnType)) return returnType;
     }
 
-    const body = this.parseBlock();
-    return { kind: ASTKind.FunctionDecl, name, params, returnType, body, span: this.getSpanSince(start) };
+    const block = this.parseBlock();
+    if (isError(block)) return block;
+
+    return {
+      kind: ASTKind.FunctionDecl,
+      name,
+      params,
+      returnType,
+      body: block.stmts,
+      span: this.backwardExtendNodeSpan(start, block),
+    };
   }
 
-  protected parseTypeExpr(): TypeExpr {}
+  protected parseTypeExpr(): TypeExpr {
+    const start = this.startOfSpan;
 
-  protected parseExpr(): Expr {}
+    if (!this.token) {
+      return this.error(this.span, "expected type expression, got <eof>");
+    }
+
+    let unique = false;
+    switch (this.token.kind) {
+      case TokenKind.Unique:
+        unique = true;
+      case TokenKind.Handle: {
+        this.next(); // consume `unique` or `handle`
+        if (unique) {
+          this.expect(TokenKind.Handle, "after unique"); // consume `handle`
+          this.inRecovery = false; // we're probably okay if we insert synthetic here
+        }
+
+        const lifetimes: Identifier[] = [];
+
+        // parse lifetime list <a, b, c>
+        if (this.consume(TokenKind.LAngle)) {
+          do {
+            const lifetime = this.expectIdentifier();
+            if (isError(lifetime)) return lifetime;
+            lifetimes.push(lifetime);
+          } while (this.consume(TokenKind.Comma));
+
+          const rangle = this.expect(TokenKind.RAngle, "to close lifetime list");
+          if (isError(rangle)) return rangle;
+        }
+
+        const inner = this.parseTypeExpr();
+        return { kind: ASTKind.HandleType, unique, lifetimes, inner, span: this.backwardExtendNodeSpan(start, inner) };
+      }
+
+      case TokenKind.Identifier:
+        return this.expectIdentifier();
+
+      default:
+        return this.error(this.span, `expected type expression, got ${TokenKind[this.token.kind]}`);
+    }
+  }
+
+  protected parseExpr(minPrecedence = 0): Expr {
+    const start = this.startOfSpan;
+    let left = this.parsePrimaryExpr();
+
+    // prec climber
+    while (this.token) {
+      const op = this.getBinaryOp(this.token.kind);
+      if (op === null) break;
+
+      const precedence = this.getBinaryPrecedence(op);
+      if (precedence < minPrecedence) break;
+
+      this.next(); // consume operator
+      const right = this.parseExpr(precedence + 1);
+      left = { kind: ASTKind.Binary, left, op, right, span: this.backwardExtendNodeSpan(start, right) };
+    }
+
+    return left;
+  }
+
+  protected parsePrimaryExpr(): Expr {
+    const start = this.startOfSpan;
+
+    if (this.token === null) {
+      return this.error(this.span, `expected expression, got <eof>`);
+    }
+    switch (this.token.kind) {
+      case TokenKind.Minus: {
+        this.next();
+        const right = this.parsePrimaryExpr();
+        return { kind: ASTKind.Unary, op: UnaryOp.Minus, right, span: this.backwardExtendNodeSpan(start, right) };
+      }
+      case TokenKind.Number: {
+        const value = this.token.value;
+        const span = this.token;
+        this.next();
+        return { kind: ASTKind.NumberLiteral, value, span };
+      }
+      case TokenKind.String: {
+        const value = this.token.value;
+        const span = this.token;
+        this.next();
+        return { kind: ASTKind.StringLiteral, value, span };
+      }
+      case TokenKind.LParen: {
+        this.next();
+        const expr = this.parseExpr();
+        this.expect(TokenKind.RParen, "to close parenthesized expression");
+        return expr;
+      }
+      case TokenKind.Identifier: {
+        const name = this.src.slice(this.token.start, this.token.end);
+        const identSpan = this.token;
+        this.next();
+        return this.parsePostfixExpr({ kind: ASTKind.Identifier, name, span: identSpan }, start);
+      }
+      case TokenKind.This: {
+        const span = this.token;
+        this.next();
+        return { kind: ASTKind.Identifier, name: "this", span };
+      }
+    }
+
+    return this.error(this.span, `expected expression, got ${TokenKind[this.token.kind]}`);
+  }
+
+  protected parsePostfixExpr(expr: Expr, start: number): Expr {
+    while (this.token) {
+      if (this.token.kind === TokenKind.LParen) {
+        this.next();
+        const args: Expr[] = [];
+
+        let end = this.endOfSpan;
+        if (!this.consume(TokenKind.RParen)) {
+          do {
+            args.push(this.parseExpr());
+          } while (this.consume(TokenKind.Comma));
+
+          end = this.endOfSpan;
+          this.expect(TokenKind.RParen, "to close function call");
+        }
+
+        expr = { kind: ASTKind.Call, callee: expr, args, span: { start, end } };
+      } else if (this.token.kind === TokenKind.Dot) {
+        this.next();
+        const memberIdent = this.expectIdentifier();
+        if (isError(memberIdent)) return memberIdent;
+
+        // method call sugar, ufcs, whatever
+        const currentToken = this.token;
+        if (currentToken && currentToken.kind === TokenKind.LParen) {
+          this.next();
+          const args: Expr[] = [];
+
+          let end = this.endOfSpan;
+          if (!this.consume(TokenKind.RParen)) {
+            do {
+              args.push(this.parseExpr());
+            } while (this.consume(TokenKind.Comma));
+
+            end = this.endOfSpan;
+            this.expect(TokenKind.RParen, "to close method call");
+          }
+
+          expr = {
+            kind: ASTKind.Call,
+            callee: memberIdent,
+            args: [expr, ...args],
+            span: { start, end },
+          };
+        } else {
+          // member access
+          return this.error(this.span, "member access not yet implemented");
+        }
+      } else {
+        break;
+      }
+    }
+
+    return expr;
+  }
+
+  protected getBinaryOp(kind: TokenKind): BinaryOp | null {
+    switch (kind) {
+      case TokenKind.Plus:
+        return BinaryOp.Plus;
+      case TokenKind.Minus:
+        return BinaryOp.Minus;
+      case TokenKind.Star:
+        return BinaryOp.Multiply;
+      case TokenKind.Slash:
+        return BinaryOp.Divide;
+      case TokenKind.EqualsEquals:
+        return BinaryOp.Equals;
+      case TokenKind.NotEquals:
+        return BinaryOp.NotEquals;
+      case TokenKind.AmpAmp:
+        return BinaryOp.And;
+      case TokenKind.PipePipe:
+        return BinaryOp.Or;
+    }
+    return null;
+  }
+
+  protected getBinaryPrecedence(op: BinaryOp): number {
+    switch (op) {
+      case BinaryOp.Or:
+        return 1;
+      case BinaryOp.And:
+        return 2;
+      case BinaryOp.Equals:
+      case BinaryOp.NotEquals:
+        return 3;
+      case BinaryOp.Plus:
+      case BinaryOp.Minus:
+        return 4;
+      case BinaryOp.Multiply:
+      case BinaryOp.Divide:
+        return 5;
+    }
+  }
 
   protected parseStmt(): Stmt {
     if (this.token === null) {
@@ -782,7 +1081,7 @@ class Parser extends ParserBase {
 
     const start = this.startOfSpan;
     const expr = this.parseExpr();
-    return { kind: ASTKind.ExprStmt, expr, span: this.getSpanSince(start) };
+    return { kind: ASTKind.ExprStmt, expr, span: this.backwardExtendNodeSpan(start, expr) };
   }
 
   public parseDeclaration(): Decl {

@@ -78,7 +78,288 @@ exports[`floating numbers 1`] = `
 ]
 `;
 
-exports[`greek identifiers 1`] = `
+exports[`identifiers and colons 1`] = `
+[
+  {
+    "kind": "Identifier",
+    "source": "foo",
+  },
+  {
+    "kind": "Colon",
+    "source": ":",
+  },
+  {
+    "kind": "Identifier",
+    "source": "bar",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`let hello = 1; 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "hello",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "1",
+    "value": 1,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`lexer > NaN literal 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "x",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "NaN",
+    "value": NaN,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`lexer > const foo = 42; 1`] = `
+[
+  {
+    "kind": "Const",
+    "source": "const",
+  },
+  {
+    "kind": "Identifier",
+    "source": "foo",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "42",
+    "value": 42,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`lexer > floating numbers 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "pi",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "3.14",
+    "value": 3.14,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`lexer > identifiers and colons 1`] = `
+[
+  {
+    "kind": "Identifier",
+    "source": "foo",
+  },
+  {
+    "kind": "Colon",
+    "source": ":",
+  },
+  {
+    "kind": "Identifier",
+    "source": "bar",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`lexer > let hello = 1; 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "hello",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Number",
+    "source": "1",
+    "value": 1,
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`lexer > mixed operators 1`] = `
+[
+  {
+    "kind": "Identifier",
+    "source": "a",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "Identifier",
+    "source": "b",
+  },
+  {
+    "kind": "Colon",
+    "source": ":",
+  },
+  {
+    "kind": "Identifier",
+    "source": "c",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`lexer > multiple identifiers 1`] = `
+[
+  {
+    "kind": "Identifier",
+    "source": "a",
+  },
+  {
+    "kind": "Identifier",
+    "source": "b",
+  },
+  {
+    "kind": "Identifier",
+    "source": "c",
+  },
+]
+`;
+
+exports[`lexer > string double quotes 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "s",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "String",
+    "source": ""world"",
+    "value": "world",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`lexer > string escapes 1`] = `
+[
+  {
+    "kind": "String",
+    "source": "'a\\nb'",
+    "value": "a
+b",
+  },
+]
+`;
+
+exports[`lexer > string single quotes 1`] = `
+[
+  {
+    "kind": "Let",
+    "source": "let",
+  },
+  {
+    "kind": "Identifier",
+    "source": "s",
+  },
+  {
+    "kind": "Equals",
+    "source": "=",
+  },
+  {
+    "kind": "String",
+    "source": "'hello'",
+    "value": "hello",
+  },
+  {
+    "kind": "Semicolon",
+    "source": ";",
+  },
+]
+`;
+
+exports[`lexer > unicode identifiers 1`] = `
 [
   {
     "kind": "Let",
@@ -125,7 +406,7 @@ exports[`greek identifiers 1`] = `
 ]
 `;
 
-exports[`greek identifiers 2`] = `
+exports[`lexer > unicode identifiers 2`] = `
 [
   {
     "kind": "Let",
@@ -151,7 +432,7 @@ exports[`greek identifiers 2`] = `
 ]
 `;
 
-exports[`greek identifiers 3`] = `
+exports[`lexer > unicode identifiers 3`] = `
 [
   {
     "kind": "Let",
@@ -177,7 +458,7 @@ exports[`greek identifiers 3`] = `
 ]
 `;
 
-exports[`greek identifiers 4`] = `
+exports[`lexer > unicode identifiers 4`] = `
 [
   {
     "kind": "Let",
@@ -203,28 +484,16 @@ exports[`greek identifiers 4`] = `
 ]
 `;
 
-exports[`identifiers and colons 1`] = `
+exports[`lexer > unquoted identifier with digits 1`] = `
 [
   {
     "kind": "Identifier",
-    "source": "foo",
-  },
-  {
-    "kind": "Colon",
-    "source": ":",
-  },
-  {
-    "kind": "Identifier",
-    "source": "bar",
-  },
-  {
-    "kind": "Semicolon",
-    "source": ";",
+    "source": "foo123",
   },
 ]
 `;
 
-exports[`let hello = 1; 1`] = `
+exports[`lexer > whitespace and newlines 1`] = `
 [
   {
     "kind": "Let",
@@ -232,7 +501,7 @@ exports[`let hello = 1; 1`] = `
   },
   {
     "kind": "Identifier",
-    "source": "hello",
+    "source": "x",
   },
   {
     "kind": "Equals",
@@ -242,10 +511,6 @@ exports[`let hello = 1; 1`] = `
     "kind": "Number",
     "source": "1",
     "value": 1,
-  },
-  {
-    "kind": "Semicolon",
-    "source": ";",
   },
 ]
 `;
@@ -294,6 +559,662 @@ exports[`multiple identifiers 1`] = `
     "source": "c",
   },
 ]
+`;
+
+exports[`parser > UFCS method call 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "NumberLiteral",
+          "value": 2,
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [
+    "expected Semicolon to close the statement, got Dot",
+    "expected RBrace to terminate block, got <eof>",
+  ],
+}
+`;
+
+exports[`parser > binary expressions 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Binary",
+          "left": {
+            "kind": "NumberLiteral",
+            "value": 1,
+          },
+          "op": 0,
+          "right": {
+            "kind": "Binary",
+            "left": {
+              "kind": "NumberLiteral",
+              "value": 2,
+            },
+            "op": 2,
+            "right": {
+              "kind": "NumberLiteral",
+              "value": 3,
+            },
+          },
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > chained UFCS calls 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "NumberLiteral",
+          "value": 2,
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [
+    "expected Semicolon to close the statement, got Dot",
+    "expected RBrace to terminate block, got <eof>",
+  ],
+}
+`;
+
+exports[`parser > chained ufcs calls 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "NumberLiteral",
+          "value": 2,
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [
+    "expected Semicolon to close the statement, got Dot",
+    "expected RBrace to terminate block, got <eof>",
+  ],
+}
+`;
+
+exports[`parser > comparison operators 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Binary",
+          "left": {
+            "kind": "Identifier",
+            "name": "x",
+          },
+          "op": 4,
+          "right": {
+            "kind": "Identifier",
+            "name": "y",
+          },
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > function call 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "args": [
+            {
+              "kind": "NumberLiteral",
+              "value": 1,
+            },
+            {
+              "kind": "NumberLiteral",
+              "value": 2,
+            },
+          ],
+          "callee": {
+            "kind": "Identifier",
+            "name": "foo",
+          },
+          "kind": "Call",
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > function with const binding 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "binding": {
+          "name": {
+            "kind": "Identifier",
+            "name": "x",
+          },
+        },
+        "init": {
+          "kind": "NumberLiteral",
+          "value": 10,
+        },
+        "kind": "Const",
+      },
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Identifier",
+          "name": "x",
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > function with let binding 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "binding": {
+          "name": {
+            "kind": "Identifier",
+            "name": "x",
+          },
+        },
+        "init": {
+          "kind": "NumberLiteral",
+          "value": 10,
+        },
+        "kind": "Let",
+      },
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Identifier",
+          "name": "x",
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > function with parameters 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Binary",
+          "left": {
+            "kind": "Identifier",
+            "name": "x",
+          },
+          "op": 0,
+          "right": {
+            "kind": "Identifier",
+            "name": "y",
+          },
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "add",
+    },
+    "params": [
+      {
+        "name": {
+          "kind": "Identifier",
+          "name": "x",
+        },
+        "type": {
+          "kind": "Identifier",
+          "name": "number",
+        },
+      },
+      {
+        "name": {
+          "kind": "Identifier",
+          "name": "y",
+        },
+        "type": {
+          "kind": "Identifier",
+          "name": "number",
+        },
+      },
+    ],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > function with return type 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "NumberLiteral",
+          "value": 1,
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "getValue",
+    },
+    "params": [],
+    "returnType": {
+      "kind": "Identifier",
+      "name": "number",
+    },
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > handle type 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Identifier",
+          "name": "h",
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [
+      {
+        "name": {
+          "kind": "Identifier",
+          "name": "h",
+        },
+        "type": {
+          "inner": {
+            "kind": "Identifier",
+            "name": "Actor",
+          },
+          "kind": "HandleType",
+          "lifetimes": [],
+          "unique": false,
+        },
+      },
+    ],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > handle type with lifetimes 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Identifier",
+          "name": "h",
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [
+      {
+        "name": {
+          "kind": "Identifier",
+          "name": "h",
+        },
+        "type": {
+          "inner": {
+            "kind": "Identifier",
+            "name": "Actor",
+          },
+          "kind": "HandleType",
+          "lifetimes": [
+            {
+              "kind": "Identifier",
+              "name": "a",
+            },
+            {
+              "kind": "Identifier",
+              "name": "b",
+            },
+          ],
+          "unique": false,
+        },
+      },
+    ],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > logical operators 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Binary",
+          "left": {
+            "kind": "Binary",
+            "left": {
+              "kind": "Identifier",
+              "name": "a",
+            },
+            "op": 6,
+            "right": {
+              "kind": "Identifier",
+              "name": "b",
+            },
+          },
+          "op": 7,
+          "right": {
+            "kind": "Identifier",
+            "name": "c",
+          },
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > parenthesized expressions 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Binary",
+          "left": {
+            "kind": "Binary",
+            "left": {
+              "kind": "NumberLiteral",
+              "value": 1,
+            },
+            "op": 0,
+            "right": {
+              "kind": "NumberLiteral",
+              "value": 2,
+            },
+          },
+          "op": 2,
+          "right": {
+            "kind": "NumberLiteral",
+            "value": 3,
+          },
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > simple function with no params 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "NumberLiteral",
+          "value": 42,
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "foo",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > string literals 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "StringLiteral",
+          "value": "hello",
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > ufcs method call 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "NumberLiteral",
+          "value": 2,
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [
+    "expected Semicolon to close the statement, got Dot",
+    "expected RBrace to terminate block, got <eof>",
+  ],
+}
+`;
+
+exports[`parser > unary minus 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Unary",
+          "op": 0,
+          "right": {
+            "kind": "NumberLiteral",
+            "value": 5,
+          },
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
+`;
+
+exports[`parser > unique handle type 1`] = `
+{
+  "ast": {
+    "body": [
+      {
+        "kind": "Return",
+        "value": {
+          "kind": "Identifier",
+          "name": "h",
+        },
+      },
+    ],
+    "kind": "FunctionDecl",
+    "name": {
+      "kind": "Identifier",
+      "name": "test",
+    },
+    "params": [
+      {
+        "name": {
+          "kind": "Identifier",
+          "name": "h",
+        },
+        "type": {
+          "inner": {
+            "kind": "Identifier",
+            "name": "Worker",
+          },
+          "kind": "HandleType",
+          "lifetimes": [],
+          "unique": true,
+        },
+      },
+    ],
+    "returnType": undefined,
+  },
+  "diagnostics": [],
+}
 `;
 
 exports[`string double quotes 1`] = `
