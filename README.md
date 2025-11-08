@@ -14,14 +14,18 @@ we're fixing both of those problems by creating new problems.
 
 the-ceiling is two things:
 
-1. a language (`.ceiling` files) with actors and borrow checking that compiles to typescript
+1. a language (`.ceiling` files) with actors and "borrow checking" that compiles to typescript
 2. a runtime actor library that runs in webworkers
 
-everything is an actor. actors send messages. the type system tracks borrows (handles) so you don't spawn a million actors and leak memory. each handle is tracked and decrements the actor's refcount when it's dropped so that the framework will know when an actor is no longer reachable and drop it.
+everything is an actor. actors send messages. the type system tracks borrows (handles) so you don't spawn a million actors and leak memory. the resource analysis here is a bit more flexible than rust's borrow checking since we allow structs to own each other
 
 ## [`FinalizationRegistry`?](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry)
 
-erm... no. we do not use `FinalizationRegistry` because [it is not reliable enough](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry#notes_on_cleanup_callbacks) and you'd have to wrap PIDs in wrapper classes that make them behave like pointers, which would be weird. instead, we use a local borrow checker on each worker at compile time and refcount the number of live handles. yes, this means you have to annotate lifetimes. don't worry, it's not as bad as rust: they're [place-annotated](https://smallcultfollowing.com/babysteps/blog/2024/03/04/borrow-checking-without-lifetimes/), not region-annotated
+erm... no. we do not use `FinalizationRegistry` because [it is not reliable enough](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry#notes_on_cleanup_callbacks) and you'd have to wrap PIDs in wrapper classes that make them behave like pointers, which would be weird. instead, we use a borrow checker on the global program at compile time to insert drops. yes, this means you have to annotate lifetimes. don't worry, it's not as bad as rust: they're [place-annotated](https://smallcultfollowing.com/babysteps/blog/2024/03/04/borrow-checking-without-lifetimes/), not region-annotated
+
+## type system
+
+global type inference is based on [Parreaux et al.'s work on MLscript](https://dl.acm.org/doi/10.1145/3632890), featuring a mixed ownership/aliasable type system with the `owned` keyword. there is limited support for unresumable effects through `ctx` and `throws`
 
 ## examples
 
@@ -79,6 +83,8 @@ command Supervisor.monitor(): void {
     this.worker = this.worker.reset { /* constructor fields */ }; // state is reset
   }
 }
+
+// note, commands can't accept handle borrows since they would have to be awaited, and commands can't be awaited
 ```
 
 come to the dark side we have UFCS
@@ -110,7 +116,7 @@ const z: handle<a, b> Actor = longest(true, a, b);
 // a and b must outlive z
 
 // for example, when a's liveness ends (and all dependents), compiler inserts
-drop(a) // ref count (by thread) decrements for the respective actor
+drop(a); // free the memory for a
 ```
 
 ```ts
@@ -173,6 +179,56 @@ function splice(arr: Array<handle Actor>, start: number, deleteCount: number): A
   /* ... */
 }
 ```
+
+### ctx
+
+as a general language feature, implicit state is passed down using an inferred and pass-by-value `ctx` object
+
+```ts
+function main() {
+  ctx.value = 1;
+  console.log(ctx.value); // 1
+  localSetTo2();
+  console.log(ctx.value); // 1
+}
+
+function localSetTo2() ctx { value: number } {
+  console.log(ctx.value); // 1
+  ctx.value = 2; // only sets for the rest of the scope
+  console.log(ctx.value); // 2
+}
+```
+
+`ctx` blocks
+
+```ts
+function main() {
+  ctx.value = 1;
+
+  ctx { value = 2 } {
+    console.log(ctx.value); // 2
+  }
+
+  console.log(ctx.value); // 1
+}
+```
+
+`ctx` defaults
+
+```ts
+function fibMemo(n: number): number ctx { memo: Map<number, number> = new Map() } {
+  if (n <= 1) return n;
+  if (ctx.memo[n]) return ?; // shorthand for condition
+
+  const result = fibMemo(n - 1) + fibMemo(n - 2);
+  ctx.memo[n] = result;
+
+  return result;
+}
+```
+
+TODO: `throws`
+TODO: out-of-place/in-place polymorphism
 
 ## will this be faster than react
 
